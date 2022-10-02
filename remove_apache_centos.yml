@@ -5,11 +5,13 @@
   tasks:
 
   - name: remove apache2 package
-    apt:
-      name: apache2
+    yum:
+      name: httpd
       state: absent
+    when:  ansible_distribution_version == "CentOS"
 
   - name: remove php support for apache
-    apt:
-      name: libapache2-mod-php
+    yum:
+      name: php
       state: absent
+    when: ansible_distribution == "CentOS"
