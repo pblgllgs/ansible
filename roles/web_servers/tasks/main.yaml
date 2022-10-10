@@ -1,28 +1,17 @@
-- name: install httpd package (CentOS)
-  tags: apache,centos,httpd
-  yum:
+- name: install apache and php packages
+  tags: apache,apache2,centos,httpd,ubuntu
+  package:
     name:
-      - httpd
-      - php
+      - "{{ apache_package_name}}"
+      - "{{ php_package_name}}"
     state: latest
-  when: ansible_distribution == "CentOS"
 
-- name: start and enable httpd (CentOS)
+- name: start and enable apache
   tags: apache,centos,httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when: ansible_distribution == "CentOS"
-
-- name: install apache2 package (Ubuntu)
-  tags: apache,apache2,ubuntu
-  apt:
-    name:
-      - apache2
-      - libapache2-mod-php
-    state: latest
-  when: ansible_distribution == "Ubuntu"
 
 - name: change e-mail address for admin
   tags: apache,centos,httpd
@@ -31,25 +20,7 @@
     regexp: '^ServerAdmin'
     line: ServerAdmin pbl.gllgs@gmail.com
   when: ansible_distribution == "CentOS"
-  register: httpd
-
-- name: restart httpd (CentOS)
-  tags: apache,centos,httpd
-  service:
-    name: httpd
-    state: restarted
-  when: httpd.changed
-
-- name: permit traffic in port 80/tcp for httpd service
-  firewalld:
-    service: "{{ item }}"
-    state: enabled
-    permanent: true
-    immediate: true
-  with_items:
-    - http
-    - https
-  when: ansible_distribution == "CentOS"
+  notify: restart_apache
 
 - name: copy html file for site
   tags: apache,apache,apache2,httpd
